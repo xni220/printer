@@ -110,6 +110,7 @@ const (
 //sys	EnumPrinters(flags uint32, name *uint16, level uint32, buf *byte, bufN uint32, needed *uint32, returned *uint32) (err error) = winspool.EnumPrintersW
 //sys	GetPrinterDriver(h syscall.Handle, env *uint16, level uint32, di *byte, n uint32, needed *uint32) (err error) = winspool.GetPrinterDriverW
 //sys	EnumJobs(h syscall.Handle, firstJob uint32, noJobs uint32, level uint32, buf *byte, bufN uint32, bytesNeeded *uint32, jobsReturned *uint32) (err error) = winspool.EnumJobsW
+//sys	ReadPrinter(h syscall.Handle, buf *byte, bufN uint32, written *uint32) (err error) = winspool.ReadPrinter
 
 func Default() (string, error) {
 	b := make([]uint16, 3)
@@ -155,7 +156,6 @@ func ReadNames() ([]string, error) {
 type Printer struct {
 	h syscall.Handle
 }
-
 
 func Open(name string) (*Printer, error) {
 	var p Printer
@@ -354,16 +354,18 @@ func (p *Printer) StartRawDocument(name string) error {
 	return p.StartDocument(name, datatype)
 }
 
-func (p *Printer) Read(b []byte) (int, error) {
-	var readed uint32
-	//未实现读，仅为编译不提示错误而加
-	return 1, nil
-}
-
-
 func (p *Printer) Write(b []byte) (int, error) {
 	var written uint32
 	err := WritePrinter(p.h, &b[0], uint32(len(b)), &written)
+	if err != nil {
+		return 0, err
+	}
+	return int(written), nil
+}
+
+func (p *Printer) Read(b []byte) (int, error) {
+	var written uint32
+	err := ReadPrinter(p.h, &b[0], uint32(len(b)), &written)
 	if err != nil {
 		return 0, err
 	}
