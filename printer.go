@@ -156,6 +156,7 @@ type Printer struct {
 	h syscall.Handle
 }
 
+
 func Open(name string) (*Printer, error) {
 	var p Printer
 	// TODO: implement pDefault parameter
@@ -352,6 +353,13 @@ func (p *Printer) StartRawDocument(name string) error {
 	}
 	return p.StartDocument(name, datatype)
 }
+
+func (p *Printer) Read(b []byte) (int, error) {
+	var readed uint32
+	//未实现读，仅为编译不提示错误而加
+	return 1, nil
+}
+
 
 func (p *Printer) Write(b []byte) (int, error) {
 	var written uint32
